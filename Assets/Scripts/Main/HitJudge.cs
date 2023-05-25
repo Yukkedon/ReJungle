@@ -45,8 +45,8 @@ public class HitJudge : MonoBehaviour
             return;
         }
 
-        NormalNoteCheck();
-        LongNoteCheck();
+        NormalNoteJudge();
+        LongNoteJudge();
 
     }
 
@@ -55,53 +55,34 @@ public class HitJudge : MonoBehaviour
         UpdateText();
     }
 
-    void NormalNoteCheck()
+    void NormalNoteJudge()
     {
         if (!touchKeyState.Contains(true))
         {
             return;
         }
 
-        // 通常ノーツ判定
-        // レーンの総数分判定を行う
+        // 各レーンを参照
         for (int laneNum = 0; laneNum < touchKeyState.Length; laneNum++)
         {
             // 対象のレーンが押されているか
             if (!touchKeyState[laneNum])
             {
-                break;
+                continue;
             }
 
-            // タッチキーステートの総数分回す
-            for (int noteTiming = 0; noteTiming < touchKeyState.Length; noteTiming++)
+            for (int noteCount = 0; noteCount < touchKeyState.Length; noteCount++)
             {
-                // ノーツの総数がノーツタイミング以下になったらやめる
-                if (notesManager.NoteDataAll.Count - 1 < noteTiming)
+                // ノーツの総数が4つ以下になったらやめる
+                if (notesManager.NoteDataAll.Count - 1 < noteCount)
                 {
                     break;
                 }
 
                 // ノーツ情報のレーンと調べてるレーンが同一なら判定
-                if (laneNum == notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].laneNum)
+                if (laneNum == notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount].laneNum)
                 {
-                    // ロングノーツであるかどうか
-                    if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].type != 2)
-                    {
-                        CheckHitTiming(Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].time + mainManager.startTime)), notesManager.NoteDataAll.Count - 1 - noteTiming);
-
-                    }
-                    else
-                    {
-                        // ロングノーツの最初がミスではない場合
-                        if (Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].time + mainManager.startTime)) <= MissSecond)
-                        {
-                            // ノーツデータをコピー
-                            NoteData tmpNote = new NoteData(notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming]);
-                            longNoteDataList.Add(tmpNote);
-                            // タイミングを計算
-                            CheckHitTiming(Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].time + mainManager.startTime)), notesManager.NoteDataAll.Count - 1 - noteTiming);
-                        }
-                    }
+                    CheckNoteType(noteCount);
                     break;
                 }
             }
@@ -132,7 +113,7 @@ public class HitJudge : MonoBehaviour
         }
     }
 
-    void LongNoteCheck()
+    void LongNoteJudge()
     {
         // ロングノーツが保存されている状態であればここに入る
         if (longNoteDataList.Count > 0)
@@ -168,6 +149,27 @@ public class HitJudge : MonoBehaviour
                     }
                     longNoteDataList.RemoveAt(i);
                 }
+            }
+        }
+    }
+
+    void CheckNoteType(int noteCount)
+    {
+        // ロングノーツであるかどうか
+        if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount].type != 2)
+        {
+            CheckHitTiming(Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount].time + mainManager.startTime)), notesManager.NoteDataAll.Count - 1 - noteCount);
+        }
+        else
+        {
+            // ロングノーツの最初がミスではない場合
+            if (Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount].time + mainManager.startTime)) <= MissSecond)
+            {
+                // ノーツデータをコピー
+                NoteData tmpNote = new NoteData(notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount]);
+                longNoteDataList.Add(tmpNote);
+                // タイミングを計算
+                CheckHitTiming(Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount].time + mainManager.startTime)), notesManager.NoteDataAll.Count - 1 - noteCount);
             }
         }
     }
