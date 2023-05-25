@@ -40,112 +40,136 @@ public class HitJudge : MonoBehaviour
 
         UpdatePushingKeyState();
 
-        if (GameManager.Instance.isStart)
+        if (!GameManager.Instance.isStart || (notesManager.NoteDataAll.Count == 0 && longNoteDataList.Count == 0))
         {
-            if (notesManager.NoteDataAll.Count != 0)
-            {
-                if (touchKeyState.Contains(true))
-                {
-                    // 通常ノーツ判定
-                    for (int laneNum = 0; laneNum < touchKeyState.Length; laneNum++)
-                    {
-                        if (touchKeyState[laneNum])
-                        {
-                            for (int noteTiming = 0; noteTiming < touchKeyState.Length; noteTiming++)
-                            {
-                                if (notesManager.NoteDataAll.Count - 1 < noteTiming)
-                                {
-                                    break;
-                                }
-
-                                if (laneNum == notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].laneNum)
-                                {
-                                    if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].type != 2)
-                                    {
-                                        CheckHitTiming(Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].time + mainManager.startTime)), notesManager.NoteDataAll.Count - 1 - noteTiming);
-
-                                    }
-                                    else
-                                    {
-                                        if (Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].time + mainManager.startTime)) <= MissSecond)
-                                        {
-                                            NoteData tmpNote = new NoteData(notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming]);
-                                            longNoteDataList.Add(tmpNote);
-                                            CheckHitTiming(Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].time + mainManager.startTime)), notesManager.NoteDataAll.Count - 1 - noteTiming);
-                                        }
-                                    }
-                                    break;
-                                }
-                            }
-                            soundMain.PlaySE((int)SoundMain.SE.Touch);
-                        }
-                    }
-                }
-
-                if (notesManager.NoteDataAll.Count != 0)
-                {
-
-                    // ミス判定
-                    if (Time.time - mainManager.startTime >= (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1].time + MissSecond))
-                    {
-                        PopupJudgeMsg(3, notesManager.NoteDataAll.Count - 1);
-                        if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1].type == 2)
-                        {
-                            DeleteData(notesManager.NoteDataAll.Count - 1, true);
-                        }
-                        else
-                        {
-                            DeleteData(notesManager.NoteDataAll.Count - 1);
-                        }
-                        mainManager.ResetCombo();
-                        mainManager.AddJudgeCount(3);
-                    }
-                }
-            }
-
-
-
-            if (longNoteDataList.Count > 0)
-            {
-                // NoteDataを個別で見る
-                for (int noteNum = longNoteDataList.Count - 1; noteNum >= 0; noteNum--)
-                {
-                    // 途中でボタンを離した時判定
-                    if (!PushingKey() && Mathf.Abs(Time.time - (longNoteDataList[noteNum].longNotes[longNoteDataList[noteNum].longNotes.Count - 1].time + mainManager.startTime)) > BadSecond)
-                    {
-                        foreach (LongNoteData longnote in longNoteDataList[noteNum].longNotes)
-                        {
-                            PopupJudgeLongMsg(3, longnote.laneNum);
-                            mainManager.ResetCombo();
-                            mainManager.AddJudgeCount(3);
-                            Destroy(longnote.notes);
-
-                        }
-                        longNoteDataList.RemoveAt(noteNum);
-                    }
-                    else
-                    {
-                        UpdateLongNotes(longNoteDataList[noteNum]);
-                    }
-                }
-                for (int i = longNoteDataList.Count - 1; i >= 0; i--)
-                {
-                    if (longNoteDataList[i].isEnd)
-                    {
-                        foreach (LongNoteData longnote in longNoteDataList[i].longNotes)
-                        {
-                            Destroy(longnote.notes);
-                        }
-                        longNoteDataList.RemoveAt(i);
-                    }
-                }
-            }
+            return;
         }
+
+        NormalNoteCheck();
+        LongNoteCheck();
+
     }
 
     private void FixedUpdate()
     {
         UpdateText();
+    }
+
+    void NormalNoteCheck()
+    {
+        if (!touchKeyState.Contains(true))
+        {
+            return;
+        }
+
+        // 通常ノーツ判定
+        // レーンの総数分判定を行う
+        for (int laneNum = 0; laneNum < touchKeyState.Length; laneNum++)
+        {
+            // 対象のレーンが押されているか
+            if (!touchKeyState[laneNum])
+            {
+                break;
+            }
+
+            // タッチキーステートの総数分回す
+            for (int noteTiming = 0; noteTiming < touchKeyState.Length; noteTiming++)
+            {
+                // ノーツの総数がノーツタイミング以下になったらやめる
+                if (notesManager.NoteDataAll.Count - 1 < noteTiming)
+                {
+                    break;
+                }
+
+                // ノーツ情報のレーンと調べてるレーンが同一なら判定
+                if (laneNum == notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].laneNum)
+                {
+                    // ロングノーツであるかどうか
+                    if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].type != 2)
+                    {
+                        CheckHitTiming(Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].time + mainManager.startTime)), notesManager.NoteDataAll.Count - 1 - noteTiming);
+
+                    }
+                    else
+                    {
+                        // ロングノーツの最初がミスではない場合
+                        if (Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].time + mainManager.startTime)) <= MissSecond)
+                        {
+                            // ノーツデータをコピー
+                            NoteData tmpNote = new NoteData(notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming]);
+                            longNoteDataList.Add(tmpNote);
+                            // タイミングを計算
+                            CheckHitTiming(Mathf.Abs(Time.time - (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteTiming].time + mainManager.startTime)), notesManager.NoteDataAll.Count - 1 - noteTiming);
+                        }
+                    }
+                    break;
+                }
+            }
+            soundMain.PlaySE((int)SoundMain.SE.Touch);
+            
+        }
+        
+
+        // 上で処理された物で最後なら処理しない
+        if (notesManager.NoteDataAll.Count != 0)
+        {
+
+            // ミス判定
+            if (Time.time - mainManager.startTime >= (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1].time + MissSecond))
+            {
+                PopupJudgeMsg(3, notesManager.NoteDataAll.Count - 1);
+                if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1].type == 2)
+                {
+                    DeleteData(notesManager.NoteDataAll.Count - 1, true);
+                }
+                else
+                {
+                    DeleteData(notesManager.NoteDataAll.Count - 1);
+                }
+                mainManager.ResetCombo();
+                mainManager.AddJudgeCount(3);
+            }
+        }
+    }
+
+    void LongNoteCheck()
+    {
+        // ロングノーツが保存されている状態であればここに入る
+        if (longNoteDataList.Count > 0)
+        {
+            // NoteDataを個別で見る
+            for (int noteNum = longNoteDataList.Count - 1; noteNum >= 0; noteNum--)
+            {
+                // 途中でボタンを離した時判定
+                if (!PushingKey() && Mathf.Abs(Time.time - (longNoteDataList[noteNum].longNotes[longNoteDataList[noteNum].longNotes.Count - 1].time + mainManager.startTime)) > BadSecond)
+                {
+                    foreach (LongNoteData longnote in longNoteDataList[noteNum].longNotes)
+                    {
+                        PopupJudgeLongMsg(3, longnote.laneNum);
+                        mainManager.ResetCombo();
+                        mainManager.AddJudgeCount(3);
+                        Destroy(longnote.notes);
+
+                    }
+                    longNoteDataList.RemoveAt(noteNum);
+                }
+                else
+                {
+                    UpdateLongNotes(longNoteDataList[noteNum]);
+                }
+            }
+            for (int i = longNoteDataList.Count - 1; i >= 0; i--)
+            {
+                if (longNoteDataList[i].isEnd)
+                {
+                    foreach (LongNoteData longnote in longNoteDataList[i].longNotes)
+                    {
+                        Destroy(longnote.notes);
+                    }
+                    longNoteDataList.RemoveAt(i);
+                }
+            }
+        }
     }
 
     void CheckHitTiming(float timeLag, int offset, bool isLong = false)
