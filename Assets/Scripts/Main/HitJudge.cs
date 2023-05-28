@@ -276,11 +276,29 @@ public class HitJudge : MonoBehaviour
                 }
                 soundMain.PlaySE((int)SoundMain.SE.Touch);
                 notedata.isEnd = true;
-                
+
+                continue;
+            }
+
+            if (IsCheckOverNote(notedata.longNotes[i].time) && !notedata.isEnd)
+            {
+                PopupJudgeLongMsg(3, notedata.longNotes[i].laneNum);
+                mainManager.ResetCombo();
+                mainManager.AddJudgeCount(3);
+                notedata.isEnd = true;
             }
             
         }
 
+    }
+
+    bool IsCheckOverNote(float time)
+    {
+        if (Time.time - (mainManager.startTime + time) >= MissSecond)
+        {
+            return true;
+        }
+        return false;
     }
 
     float CalcHitTiming(float time)
