@@ -221,26 +221,28 @@ public class HitJudge : MonoBehaviour
     {
         for (int i = notedata.longNotes.Count - 1; i >= 0; i--)
         {
+            // このネストでどう処理するのかを決めないと
+            // ネスト深すぎ問題が発生する
+
             // ロングノーツ中に出てくるノーツ判定
             if (i != notedata.longNotes.Count - 1)
             {
+                if (!pushingKeyState[notedata.longNotes[i].laneNum])
+                {
+                    continue;
+                }
                 // パーフェクト判定の範囲に入っていてまだ判定していない状態であれば処理
                 if (CalcHitTiming(notedata.longNotes[i].time) <= PerfectSecond && !notedata.longNotes[i].passnext)
                 {
-                    if (pushingKeyState[notedata.longNotes[i].laneNum])
-                    {
-                        PopupJudgeLongMsg(0, notedata.longNotes[i].laneNum);
-                        mainManager.AddCombo();
-                        mainManager.AddJudgeCount(0);
-                        notedata.longNotes[i].passnext = true;
-                        soundMain.PlaySE((int)SoundMain.SE.Touch);
-
-                    }
+                    PopupJudgeLongMsg(0, notedata.longNotes[i].laneNum);
+                    mainManager.AddCombo();
+                    mainManager.AddJudgeCount(0);
+                    notedata.longNotes[i].passnext = true;
+                    soundMain.PlaySE((int)SoundMain.SE.Touch);
                 }
                 continue;
             }
             // 最後のロングノーツの判定
-            // ボタンを押しながらスルーすることでバグを起こすことができる
             if (CalcHitTiming(notedata.longNotes[i].time) <= MissSecond && !notedata.isEnd)
             {
 
@@ -248,6 +250,8 @@ public class HitJudge : MonoBehaviour
                 {
                     continue;
                 }
+
+
 
                 if (CalcHitTiming(notedata.longNotes[i].time) <= PerfectSecond)
                 {

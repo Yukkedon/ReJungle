@@ -131,43 +131,43 @@ public class NotesManager : MonoBehaviour
             NoteDataAll.Add(noteData);
 
             // ロングノーツ判定
-            if (noteData.type == 2)
+            if (noteData.type != 2)
             {
-                // ロングノーツ作成処理
-                for (int j = 0; j < jsonData["notes"][i]["notes"].Count; j++)
+                continue;
+            }
+            // ロングノーツ作成処理
+            for (int j = 0; j < jsonData["notes"][i]["notes"].Count; j++)
+            {
+
+                LPB = jsonData["notes"][i]["notes"][j]["LPB"].ToString();
+                NUM = jsonData["notes"][i]["notes"][j]["num"].ToString();
+                BLOCK = jsonData["notes"][i]["notes"][j]["block"].ToString();
+                TYPE = jsonData["notes"][i]["notes"][j]["type"].ToString();
+
+                space = 60 / (float.Parse(BPM) * float.Parse(LPB));
+                beatSec = space * float.Parse(LPB);
+                time = (beatSec * float.Parse(NUM) / float.Parse(LPB) + float.Parse(OFFSET) * 0.01f);
+
+                noteData = new NoteData(int.Parse(TYPE), time, int.Parse(BLOCK), float.Parse(LPB));
+
+                z = noteData.time * NotesSpeed;
+
+                noteNum++;
+
+                LongNoteData longnoteData = new LongNoteData(int.Parse(TYPE), time, int.Parse(BLOCK), float.Parse(LPB));
+                longnoteData.notes = (GameObject)Instantiate(noteObj, new Vector3(noteData.laneNum - 1.5f, 0.55f, z), Quaternion.identity);
+                NoteDataAll[NoteDataAll.Count - 1].longNotes.Add(longnoteData);
+
+                // 最初に軌道する場合はこちら
+                if (j == 0)
                 {
-
-                    LPB = jsonData["notes"][i]["notes"][j]["LPB"].ToString();
-                    NUM = jsonData["notes"][i]["notes"][j]["num"].ToString();
-                    BLOCK = jsonData["notes"][i]["notes"][j]["block"].ToString();
-                    TYPE = jsonData["notes"][i]["notes"][j]["type"].ToString();
-
-                    space = 60 / (float.Parse(BPM) * float.Parse(LPB));
-                    beatSec = space * float.Parse(LPB);
-                    time = (beatSec * float.Parse(NUM) / float.Parse(LPB) + float.Parse(OFFSET) * 0.01f);
-
-                    noteData = new NoteData(int.Parse(TYPE), time, int.Parse(BLOCK), float.Parse(LPB));
-
-                    z = noteData.time * NotesSpeed;
-
-                    noteNum++;
-
-                    LongNoteData longnoteData = new LongNoteData(int.Parse(TYPE), time, int.Parse(BLOCK), float.Parse(LPB));
-                    longnoteData.notes = (GameObject)Instantiate(noteObj, new Vector3(noteData.laneNum - 1.5f, 0.55f, z), Quaternion.identity);
-                    NoteDataAll[NoteDataAll.Count - 1].longNotes.Add(longnoteData);
-
-                    // 最初に軌道する場合はこちら
-                    if (j == 0)
-                    {
-                        LongNotesCreate(NotesObj[NotesObj.Count - 1].transform, longnoteData.notes.transform, longnoteData.notes);
-                    }
-                    else
-                    {
-                        // 2個以上は1つ前のノーツ情報を取得するため j - 1 で指定している
-                        LongNotesCreate(NoteDataAll[NoteDataAll.Count - 1].longNotes[j - 1].notes.transform, longnoteData.notes.transform, longnoteData.notes);
-                    }
+                    LongNotesCreate(NotesObj[NotesObj.Count - 1].transform, longnoteData.notes.transform, longnoteData.notes);
                 }
-
+                else
+                {
+                    // 2個以上は1つ前のノーツ情報を取得するため j - 1 で指定している
+                    LongNotesCreate(NoteDataAll[NoteDataAll.Count - 1].longNotes[j - 1].notes.transform, longnoteData.notes.transform, longnoteData.notes);
+                }
             }
         }
         mainManager.maxScore = noteNum * mainManager.MAX_RAITO_POINT;
