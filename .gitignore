@@ -75,3 +75,5 @@ crashlytics-build.properties
 crashlytics-build.properties
 /[Aa]ssets/[Mm]aterials/SkyBox/*
 
+# UniRx UniTask
+/[Aa]ssets/[Pp]lugins/*
