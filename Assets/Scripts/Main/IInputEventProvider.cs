@@ -4,5 +4,5 @@ using UnityEngine;
 
 public interface IInputEventProvider
 {
-    IObservable<bool> OnTouchKey { get; }
+    IObservable<bool> OnKeyState { get; }
 }
