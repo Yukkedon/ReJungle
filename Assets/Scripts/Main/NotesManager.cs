@@ -29,7 +29,7 @@ public abstract class BaseNoteData
     {
         return this.time;
     }
-    public int GetType()
+    public int GetNoteType()
     {
         return this.type;
     }
@@ -156,11 +156,13 @@ public class NotesManager : MonoBehaviour
             float beatSec = space * float.Parse(LPB);
             float time = (beatSec * float.Parse(NUM) / float.Parse(LPB) + float.Parse(OFFSET) * 0.01f);
 
+            Vector3 pos = new Vector3(int.Parse(BLOCK) - 1.5f, 0.55f, NotesSpeed * time);
             // 通常のノーツ作成処理
             if (TYPE.Equals("1"))
             {
                 BaseNoteData noteData = new NormalNoteData(int.Parse(TYPE), time, int.Parse(BLOCK), float.Parse(LPB));
-                noteData.SetNoteObj(_noteObj);
+                
+                noteData.SetNoteObj((GameObject)Instantiate(_noteObj, pos, Quaternion.identity));
                 noteData.SetObjPosz(NotesSpeed);
                 NoteDataAll.Add(noteData);
                 continue;
@@ -169,7 +171,7 @@ public class NotesManager : MonoBehaviour
 
             // 最初のロングノーツはここで作成
             BaseNoteData longNoteData = new LongNoteData(int.Parse(TYPE), time, int.Parse(BLOCK), float.Parse(LPB));
-            longNoteData.SetNoteObj(_noteObj);
+            longNoteData.SetNoteObj((GameObject)Instantiate(_noteObj, pos, Quaternion.identity));
             longNoteData.SetObjPosz(NotesSpeed);
             NoteDataAll.Add(longNoteData);
 
@@ -190,23 +192,24 @@ public class NotesManager : MonoBehaviour
                 longNoteData.SetObjPosz(NotesSpeed);
                 noteNum++;
 
-                Vector3 pos = new Vector3(int.Parse(BLOCK) - 1.5f, 0.55f, NotesSpeed * time);
-                ((LongNoteData)longNoteData).SetNoteObj((GameObject)Instantiate(_noteObj, pos, Quaternion.identity));
+                Vector3 subNotepos = new Vector3(int.Parse(BLOCK) - 1.5f, 0.55f, NotesSpeed * time);
+                ((LongNoteData)longNoteData).SetNoteObj((GameObject)Instantiate(_noteObj, subNotepos, Quaternion.identity));
 
                 // 最初に軌道する場合はこちら
                 if (j == 0)
                 {
-                    LongNotesCreate(((LongNoteData)longNoteData).GetNotePos(0), ((LongNoteData)longNoteData).GetNotePos(1), _noteObj);
+                    //LongNotesCreate(((LongNoteData)longNoteData).GetNotePos(0), ((LongNoteData)longNoteData).GetNotePos(1), _noteObj);
                 }
                 else
                 {
                     // 2個以上は1つ前のノーツ情報を取得するため j - 1 で指定している
-                    LongNotesCreate(((LongNoteData)longNoteData).GetNotePos(j), ((LongNoteData)longNoteData).GetNotePos(j+1), _noteObj);
+                    //LongNotesCreate(((LongNoteData)longNoteData).GetNotePos(j), ((LongNoteData)longNoteData).GetNotePos(j+1), _noteObj);
                     //LongNotesCreate(NoteDataAll[NoteDataAll.Count - 1].longNotes[j - 1].notes.transform, longnoteData.notes.transform, longnoteData.notes);
                 }
             }
         }
         mainManager.maxScore = noteNum * mainManager.MAX_RAITO_POINT;
+        Debug.Log(noteNum);
     }
 
     private const float LANE_WIDTH = 1.0f;

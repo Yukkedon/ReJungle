@@ -88,7 +88,7 @@ public class HitJudgeRx : MonoBehaviour
                 }
 
                 // ノーツ情報のレーンと調べてるレーンが同一なら判定
-                if (laneNum == notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount].GetType())
+                if (laneNum == notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount].GetNoteType())
                 {
                     CheckNoteType(noteCount);
                     break;
@@ -107,7 +107,7 @@ public class HitJudgeRx : MonoBehaviour
             if (Time.time - mainManager.startTime >= (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1].GetTime() + MissSecond))
             {
                 PopupJudgeMsg(3, notesManager.NoteDataAll.Count - 1);
-                if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1].GetType() == 2)
+                if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1].GetNoteType() == 2)
                 {
                     DeleteData(notesManager.NoteDataAll.Count - 1, true);
                 }
@@ -167,7 +167,7 @@ public class HitJudgeRx : MonoBehaviour
     void CheckNoteType(int noteCount)
     {
         // ロングノーツであるかどうか
-        if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount].GetType() != 2)
+        if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount].GetNoteType() != 2)
         {
             CheckHitTiming(CalcHitTiming(notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - noteCount].GetTime()), notesManager.NoteDataAll.Count - 1 - noteCount);
         }
@@ -354,8 +354,8 @@ public class HitJudgeRx : MonoBehaviour
 
     void UpdateText()
     {
-        comboText.text = "Combo\n" + mainManager.GetCombo().ToString();
-        scoreText.text = "Score:" + mainManager.GetPoint().ToString();
+        //comboText.text = "Combo\n" + mainManager.GetCombo().ToString();
+        //scoreText.text = "Score:" + mainManager.GetPoint().ToString();
     }
     void PopupJudgeMsg(int judge, int offset = 0)
     {
