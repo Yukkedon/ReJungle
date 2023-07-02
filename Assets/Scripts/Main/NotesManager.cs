@@ -1,4 +1,4 @@
-using System;
+
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
@@ -41,7 +41,7 @@ public abstract class BaseNoteData
     {
         return this.laneNum;
     }
-
+    
 }
 
 public class NormalNoteData:BaseNoteData
@@ -70,12 +70,20 @@ public class NormalNoteData:BaseNoteData
         return objPosz;
     }
 
+    public void DeleteMyObject()
+    {
+        UnityEngine.Object.Destroy(note);
+    }
+
 }
 
 public class LongNoteData:BaseNoteData
 {
-    public List<GameObject> notes = new List<GameObject>();
+    public List<GameObject> notes     = new List<GameObject>();
     public List<GameObject> noteTrail = new List<GameObject>();
+
+    public List<BaseNoteData> behindNotes = new List<BaseNoteData>();
+
     public LongNoteData(int type, float time, int laneNum, float LPB)
     {
         this.type = type;
@@ -99,6 +107,25 @@ public class LongNoteData:BaseNoteData
         return notes[count].transform.position;
     }
 
+    public void SetBehindNotesStatus(BaseNoteData behindNote)
+    {
+        behindNotes.Add(behindNote);
+    }
+
+
+    public void DeleteOneObject(int count)
+    {
+        UnityEngine.Object.Destroy(notes[count]);
+        notes.RemoveAt(count);
+    }
+    public void DeleteAllObject()
+    {
+        for (int i = notes.Count - 1; i >= 0; i--)
+        {
+            UnityEngine.Object.Destroy(notes[i]);
+            notes.RemoveAt(i);
+        }
+    }
 }
 
 enum NotesType
@@ -111,6 +138,7 @@ enum NotesType
 public class NotesManager : MonoBehaviour
 {
     [SerializeField] GameObject _noteObj;
+    [SerializeField] Mesh _longNoteTrail;
     public int noteNum;
 
     [SerializeField] MainManager mainManager;
@@ -194,18 +222,7 @@ public class NotesManager : MonoBehaviour
 
                 Vector3 subNotepos = new Vector3(int.Parse(BLOCK) - 1.5f, 0.55f, NotesSpeed * time);
                 ((LongNoteData)longNoteData).SetNoteObj((GameObject)Instantiate(_noteObj, subNotepos, Quaternion.identity));
-
-                // 最初に軌道する場合はこちら
-                if (j == 0)
-                {
-                    //LongNotesCreate(((LongNoteData)longNoteData).GetNotePos(0), ((LongNoteData)longNoteData).GetNotePos(1), _noteObj);
-                }
-                else
-                {
-                    // 2個以上は1つ前のノーツ情報を取得するため j - 1 で指定している
-                    //LongNotesCreate(((LongNoteData)longNoteData).GetNotePos(j), ((LongNoteData)longNoteData).GetNotePos(j+1), _noteObj);
-                    //LongNotesCreate(NoteDataAll[NoteDataAll.Count - 1].longNotes[j - 1].notes.transform, longnoteData.notes.transform, longnoteData.notes);
-                }
+                LongNotesCreate(((LongNoteData)longNoteData).GetNotePos(j), ((LongNoteData)longNoteData).GetNotePos(j+1), ((LongNoteData)longNoteData).notes[j+1]);
             }
         }
         mainManager.maxScore = noteNum * mainManager.MAX_RAITO_POINT;
@@ -232,6 +249,8 @@ public class NotesManager : MonoBehaviour
         vertices[1] = start + new Vector3(LANE_WIDTH / 2.0f - NOTES_SIZE_OFFSET, 0, 0);
         vertices[2] = end + new Vector3(LANE_WIDTH / 2.0f - NOTES_SIZE_OFFSET, 0, 0);
         vertices[3] = end + new Vector3(-LANE_WIDTH / 2.0f + NOTES_SIZE_OFFSET, 0, 0);
+        //vertices[2] = end + new Vector3(LANE_WIDTH / 2.0f - NOTES_SIZE_OFFSET, 0, 0);
+        //vertices[3] = end + new Vector3(-LANE_WIDTH / 2.0f + NOTES_SIZE_OFFSET, 0, 0);
 
         triangles = new int[6] { 0, 2, 1, 3, 2, 0 };
 
