@@ -937,6 +937,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _noteObj: {fileID: 6956675484662243556, guid: 71af1877905650a4483e4719c74f16a1, type: 3}
+  _longNoteTrail: {fileID: 0}
   noteNum: 0
   mainManager: {fileID: 544927279}
   NotesLineMaterial: {fileID: 2100000, guid: 6e176e5c526493e48a350e6edbaf1743, type: 2}
@@ -1045,8 +1046,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a414f7a31089cf347be37de17ffcf85e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainManager: {fileID: 0}
-  JudgeMsgObj: []
+  mainManager: {fileID: 544927279}
+  JudgeMsgObj:
+  - {fileID: 8255549169200763825, guid: be942b16831b6474d8b6e0cb2a8b8271, type: 3}
+  - {fileID: 609436430595042738, guid: 28da238ad0ee163428d0d24750ae6e69, type: 3}
+  - {fileID: 3540987612317056623, guid: f92358cb1260bfa4b98f85eb51ded5cb, type: 3}
+  - {fileID: 4393485517452040244, guid: 92d345e74474fc3419816bec673b1c72, type: 3}
   notesManager: {fileID: 460355682}
   soundMain: {fileID: 915999591}
   comboText: {fileID: 1757894761}
