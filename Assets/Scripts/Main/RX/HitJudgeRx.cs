@@ -52,36 +52,16 @@ public class HitJudgeRx : MonoBehaviour
             return;
         }
 
-
-        // ボタンが押されていない場合
-        if (!pushingKeyState.Contains(true))
-        {
-            for (int i = 3; i >= 0; i--)
-            {
-                if (notesManager.NoteDataAll.Count < i)
-                {
-                    continue;
-                }
-                if (IsCheckMissTime(i))
-                {
-                    PopupJudgeMsg((int)eTiming.Miss,notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - i].GetLaneNum());
-                    DeleteData(i);
-                }
-            }
-            return;
-        }
-
         // 各押されているボタンを参照して対応するレーン番号を処理する
         for (int i = 3; i >= 0; i--)
         {
+            // ロングノーツ押しているときの処理
             if (!touchKeyState[i])
             {
                 continue;
             }
 
-            Debug.Log(i + "が押された");
-
-            // 
+            // ノーツの種類によって処理する先を変更する
             for (int j = 0; j <= 3; j++)
             {
                 if (notesManager.NoteDataAll.Count < j)
@@ -102,14 +82,78 @@ public class HitJudgeRx : MonoBehaviour
             }
         }
 
-        //NormalNoteJudge();
-        
+        // ロングノーツを押している・離した時の処理
+        for (int i = 3; i >= 0; i--)
+        {
+
+            for (int j = 3; j >= 0; j--)
+            {
+                // ロングノーツ押しているときの処理
+                if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - j].GetType() != typeof(LongNoteData))
+                {
+                    continue;
+                }
+
+                if (!((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - j]).GetIsPush())
+                {
+                    continue;
+                }
+
+                if (pushingKeyState[i])
+                {
+                    continue;
+                }
+
+                if (CheckHitTiming(((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - j]).GetBehindTime(mainManager.startTime)
+                     , ((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - j]).behindNotes[0].GetLaneNum()))
+                {
+                    ((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - j]).DeleteAllObject();
+                    ((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - j]).DeleteOneBehindData();
+                    notesManager.NoteDataAll.RemoveAt(notesManager.NoteDataAll.Count - 1 - j);
+                }
+                else
+                {
+                    DeleteData(i);
+                }
+
+            }
+
+
+        }
+
+        // ボタンが押されていない場合
+        /*
+        if (!pushingKeyState.Contains(true))
+        {
+            for (int i = 3; i >= 0; i--)
+            {
+                if (notesManager.NoteDataAll.Count < i)
+                {
+                    continue;
+                }
+                if (IsCheckMissTime(i))
+                {
+                    Debug.Log("ボタン押されていない削除");
+                    PopupJudgeMsg((int)eTiming.Miss, notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - i].GetLaneNum());
+                    DeleteData(i);
+                }
+            }
+            return;
+        }*/
 
         // ノーツ情報をレーンの数分調べ「経過時間 + ミスの時間」
-        for(int i = 3; i >= 0; i--)
+        for (int i = 3; i >= 0; i--)
         {
-            if (IsCheckMissTime(i))
+            if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - i].GetType() == typeof(LongNoteData))
             {
+                if (((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - i]).GetIsPush())
+                {
+                    continue;
+                }
+            }
+
+            if (IsCheckMissTime(i))
+            {   
                 DeleteData(i);
             }
         }
@@ -136,11 +180,10 @@ public class HitJudgeRx : MonoBehaviour
         if (CheckHitTiming(time, iLaneNum))
         {
             ((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - notedataOffset]).DeleteOneObject(0);
-
+            ((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - notedataOffset]).UpdateIsPush();
         }
 
         soundMain.PlaySE((int)SoundMain.SE.Touch);
-
     }
 
 
@@ -176,87 +219,6 @@ public class HitJudgeRx : MonoBehaviour
         }
         return true;
     }
-/*
-    void UpdateLongNotes(NoteData notedata)
-    {
-        for (int i = notedata.longNotes.Count - 1; i >= 0; i--)
-        {
-            // このネストでどう処理するのかを決めないと
-            // ネスト深すぎ問題が発生する
-
-            // ロングノーツ中に出てくるノーツ判定
-            if (i != notedata.longNotes.Count - 1)
-            {
-                if (!pushingKeyState[notedata.longNotes[i].laneNum])
-                {
-                    continue;
-                }
-                // パーフェクト判定の範囲に入っていてまだ判定していない状態であれば処理
-                if (CalcHitTiming(notedata.longNotes[i].time) <= PerfectSecond && !notedata.longNotes[i].passnext)
-                {
-                    PopupJudgeLongMsg(0, notedata.longNotes[i].laneNum);
-                    mainManager.AddCombo();
-                    mainManager.AddJudgeCount(0);
-                    notedata.longNotes[i].passnext = true;
-                    soundMain.PlaySE((int)SoundMain.SE.Touch);
-                }
-                continue;
-            }
-            // 最後のロングノーツの判定
-            if (CalcHitTiming(notedata.longNotes[i].time) <= MissSecond && !notedata.isEnd)
-            {
-
-                if (pushingKeyState[notedata.longNotes[i].laneNum])
-                {
-                    continue;
-                }
-
-
-
-                if (CalcHitTiming(notedata.longNotes[i].time) <= PerfectSecond)
-                {
-                    PopupJudgeLongMsg(0, notedata.longNotes[i].laneNum);
-                    mainManager.AddCombo();
-                    mainManager.AddJudgeCount(0);
-                }
-                else if (CalcHitTiming(notedata.longNotes[i].time) <= GreatSecond)
-                {
-                    PopupJudgeLongMsg(1, notedata.longNotes[i].laneNum);
-                    mainManager.AddCombo();
-                    mainManager.AddJudgeCount(1);
-                }
-                else if (CalcHitTiming(notedata.longNotes[i].time) <= BadSecond)
-                {
-
-                    PopupJudgeLongMsg(2, notedata.longNotes[i].laneNum);
-                    mainManager.ResetCombo();
-                    mainManager.AddJudgeCount(2);
-                }
-                else if (CalcHitTiming(notedata.longNotes[i].time) <= MissSecond)
-                {
-                    PopupJudgeLongMsg(3, notedata.longNotes[i].laneNum);
-                    mainManager.ResetCombo();
-                    mainManager.AddJudgeCount(3);
-                }
-                soundMain.PlaySE((int)SoundMain.SE.Touch);
-                notedata.isEnd = true;
-
-                continue;
-            }
-
-            if (IsCheckOverNote(notedata.longNotes[i].time) && !notedata.isEnd)
-            {
-                PopupJudgeLongMsg(3, notedata.longNotes[i].laneNum);
-                mainManager.ResetCombo();
-                mainManager.AddJudgeCount(3);
-                notedata.isEnd = true;
-            }
-
-        }
-
-    }
-*/
-
 
     bool IsCheckMissTime(int count)
     {

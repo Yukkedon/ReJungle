@@ -77,12 +77,29 @@ public class NormalNoteData:BaseNoteData
 
 }
 
+public class BehindNoteData : BaseNoteData
+{
+    public BehindNoteData(int type, float time, int laneNum, float LPB)
+    {
+        this.type = type;
+        this.time = time;
+        this.laneNum = laneNum;
+        this.LPB = LPB;
+    }
+    public override void SetNoteObj(GameObject note)
+    {
+        //
+    }
+}
+
 public class LongNoteData:BaseNoteData
 {
     public List<GameObject> notes     = new List<GameObject>();
     public List<GameObject> noteTrail = new List<GameObject>();
 
     public List<BaseNoteData> behindNotes = new List<BaseNoteData>();
+
+    private bool isPush = false;
 
     public LongNoteData(int type, float time, int laneNum, float LPB)
     {
@@ -112,6 +129,25 @@ public class LongNoteData:BaseNoteData
         behindNotes.Add(behindNote);
     }
 
+    public bool GetIsPush()
+    {
+        return isPush;
+    }
+
+    public void UpdateIsPush()
+    {
+        isPush = true;
+    }
+
+    public float GetBehindTime(float startTime)
+    {
+        return behindNotes[0].CalcTime(startTime);
+    }
+
+    public void DeleteOneBehindData()
+    {
+        behindNotes.RemoveAt(0);
+    }
 
     public void DeleteOneObject(int count)
     {
@@ -124,6 +160,10 @@ public class LongNoteData:BaseNoteData
         {
             UnityEngine.Object.Destroy(notes[i]);
             notes.RemoveAt(i);
+        }
+        for(int i = behindNotes.Count-1; i >= 0; i--)
+        {
+            behindNotes.RemoveAt(i);
         }
     }
 }
@@ -203,6 +243,7 @@ public class NotesManager : MonoBehaviour
             longNoteData.SetObjPosz(NotesSpeed);
             NoteDataAll.Add(longNoteData);
 
+            BaseNoteData behindNote;
             // 残りのロングノーツ作成処理
             for (int j = 0; j < jsonData["notes"][i]["notes"].Count; j++)
             {
@@ -217,12 +258,15 @@ public class NotesManager : MonoBehaviour
                 time = (beatSec * float.Parse(NUM) / float.Parse(LPB) + float.Parse(OFFSET) * 0.01f);
 
                 
+                behindNote = new BehindNoteData(int.Parse(TYPE), time, int.Parse(BLOCK), float.Parse(LPB));
+
                 longNoteData.SetObjPosz(NotesSpeed);
                 noteNum++;
 
                 Vector3 subNotepos = new Vector3(int.Parse(BLOCK) - 1.5f, 0.55f, NotesSpeed * time);
                 ((LongNoteData)longNoteData).SetNoteObj((GameObject)Instantiate(_noteObj, subNotepos, Quaternion.identity));
                 LongNotesCreate(((LongNoteData)longNoteData).GetNotePos(j), ((LongNoteData)longNoteData).GetNotePos(j+1), ((LongNoteData)longNoteData).notes[j+1]);
+                ((LongNoteData)longNoteData).SetBehindNotesStatus(behindNote);
             }
         }
         mainManager.maxScore = noteNum * mainManager.MAX_RAITO_POINT;
