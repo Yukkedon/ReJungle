@@ -144,6 +144,11 @@ public class LongNoteData:BaseNoteData
         return behindNotes[0].CalcTime(startTime);
     }
 
+    public float GetLastBehindTime(float startTime)
+    {
+        return behindNotes[behindNotes.Count - 1].CalcTime(startTime);
+    }
+
     public void DeleteOneBehindData()
     {
         behindNotes.RemoveAt(0);
@@ -161,7 +166,7 @@ public class LongNoteData:BaseNoteData
             UnityEngine.Object.Destroy(notes[i]);
             notes.RemoveAt(i);
         }
-        for(int i = behindNotes.Count-1; i >= 0; i--)
+        for(int i = behindNotes.Count - 1; i >= 0; i--)
         {
             behindNotes.RemoveAt(i);
         }
