@@ -143,6 +143,10 @@ public class LongNoteData:BaseNoteData
     {
         return behindNotes[0].CalcTime(startTime);
     }
+    public float GetLastBehindTime()
+    {
+        return behindNotes[behindNotes.Count - 1].GetTime();
+    }
 
     public float GetLastBehindTime(float startTime)
     {
