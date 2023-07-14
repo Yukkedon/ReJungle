@@ -4,5 +4,10 @@ using UnityEngine;
 
 public interface IInputEventProvider
 {
-    IObservable<bool> OnKeyState { get; }
+    IObservable<bool> OnKeyStateD { get; }
+    IObservable<bool> OnKeyStateF { get; }
+    IObservable<bool> OnKeyStateJ { get; }
+    IObservable<bool> OnKeyStateK { get; }
+
+
 }
