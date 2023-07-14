@@ -31,6 +31,9 @@ public class HitJudgeRx : MonoBehaviour
     private IInputEventProvider _inputEventProvider;
 
     private readonly ReactiveProperty<Unit> _keyStateD = new ReactiveProperty<Unit>();
+    private readonly ReactiveProperty<Unit> _keyStateF = new ReactiveProperty<Unit>();
+    private readonly ReactiveProperty<Unit> _keyStateJ = new ReactiveProperty<Unit>();
+    private readonly ReactiveProperty<Unit> _keyStateK = new ReactiveProperty<Unit>();
 
     enum eStateKey
     {
@@ -68,7 +71,46 @@ public class HitJudgeRx : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("‚¿‚á‚ñ‚Æ‚È‚È‚ê‚Â");
+                    UpdatePushingNote(0);
+                }
+        });
+        
+        _inputEventProvider.OnKeyStateF
+            .DistinctUntilChanged()
+            .Subscribe(_ => {
+                if (_)
+                {
+                    UpdateTapNote(1);
+                }
+                else
+                {
+                    UpdatePushingNote(1);
+                }
+        });
+        
+        _inputEventProvider.OnKeyStateJ
+            .DistinctUntilChanged()
+            .Subscribe(_ => {
+                if (_)
+                {
+                    UpdateTapNote(2);
+                }
+                else
+                {
+                    UpdatePushingNote(2);
+                }
+        });
+        
+        _inputEventProvider.OnKeyStateK
+            .DistinctUntilChanged()
+            .Subscribe(_ => {
+                if (_)
+                {
+                    UpdateTapNote(3);
+                }
+                else
+                {
+                    UpdatePushingNote(3);
                 }
         });
     }
@@ -84,24 +126,6 @@ public class HitJudgeRx : MonoBehaviour
             return;
         }
 
-        /*        for(int i = 3; i >= 0; i--)
-                {
-                    if (notesManager.NoteDataAll.Count - 1 < i)
-                    {
-                        continue;
-                    }
-
-                    if (IsCheckSameLane(i))
-                    {
-                        continue;
-                    }
-                    // ‰Ÿ‚µ‚½uŠÔ
-                    UpdateTapNote(i);
-                    // ƒƒ“ƒOƒm[ƒc’·‰Ÿ‚µˆ—
-                    UpdatePushingNote(i);
-                    // ƒXƒ‹[ˆ—
-                    UpdateOverLookedNote(i);
-                }*/
 
         for (int LaneNum = 3; LaneNum >= 0; LaneNum--)
         {
@@ -216,7 +240,7 @@ public class HitJudgeRx : MonoBehaviour
             }
         }
     }
-
+/*
     void UpdatePushingNote(int count)
     {
 
@@ -255,6 +279,54 @@ public class HitJudgeRx : MonoBehaviour
             {
                 break;
             }
+
+            if (CheckHitTiming(((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).GetLastBehindTime(mainManager.startTime), laneNum))
+            {
+                ((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).DeleteAllObject();
+                notesManager.NoteDataAll.RemoveAt(notesManager.NoteDataAll.Count - 1 - count);
+                soundMain.PlaySE((int)SoundMain.SE.Touch);
+                break;
+            }
+            else
+            {
+                DeleteData(count);
+                break;
+            }
+        }
+    }*/
+    void UpdatePushingNote(int laneNum)
+    {
+        // 1,ƒŒ[ƒ“”Ô†‚ªˆá‚¦‚Îcontinue
+        // 2,—£‚µ‚½Žž ‰Ÿ‚µ‚½uŠÔ‚Æ’·‰Ÿ‚µ‚ðŠÇ—‚µ‚Ä‚¢‚éî•ñ‚ªfalse‚É‚È‚ê‚Î’·‰Ÿ‚µ‚µ‚½‚±‚Æ‚É‚µ‚Äˆ—
+        for (int count = 3; count >= 0; count--)
+        {
+            if (notesManager.NoteDataAll.Count < count)
+            {
+                continue;
+            }
+
+            if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].GetLaneNum() != laneNum)
+            {
+                continue;
+            }
+
+            if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].GetType() != typeof(LongNoteData))
+            {
+                continue;
+            }
+            
+            if (!((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).GetIsPush())
+            {
+                continue;
+            }
+
+
+
+/*            if (MissSecond + ((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).GetLastBehindTime() <= Time.time - mainManager.startTime)
+            {
+                DeleteData(count);
+                break;
+            }*/
 
             if (CheckHitTiming(((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).GetLastBehindTime(mainManager.startTime), laneNum))
             {
