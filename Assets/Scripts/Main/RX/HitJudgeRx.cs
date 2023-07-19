@@ -31,6 +31,9 @@ public class HitJudgeRx : MonoBehaviour
     private IInputEventProvider _inputEventProvider;
 
     private readonly ReactiveProperty<Unit> _keyStateD = new ReactiveProperty<Unit>();
+    private readonly ReactiveProperty<Unit> _keyStateF = new ReactiveProperty<Unit>();
+    private readonly ReactiveProperty<Unit> _keyStateJ = new ReactiveProperty<Unit>();
+    private readonly ReactiveProperty<Unit> _keyStateK = new ReactiveProperty<Unit>();
 
     enum eStateKey
     {
@@ -68,7 +71,46 @@ public class HitJudgeRx : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log("ちゃんとななれつ");
+                    UpdatePushingNote(0);
+                }
+        });
+        
+        _inputEventProvider.OnKeyStateF
+            .DistinctUntilChanged()
+            .Subscribe(_ => {
+                if (_)
+                {
+                    UpdateTapNote(1);
+                }
+                else
+                {
+                    UpdatePushingNote(1);
+                }
+        });
+        
+        _inputEventProvider.OnKeyStateJ
+            .DistinctUntilChanged()
+            .Subscribe(_ => {
+                if (_)
+                {
+                    UpdateTapNote(2);
+                }
+                else
+                {
+                    UpdatePushingNote(2);
+                }
+        });
+        
+        _inputEventProvider.OnKeyStateK
+            .DistinctUntilChanged()
+            .Subscribe(_ => {
+                if (_)
+                {
+                    UpdateTapNote(3);
+                }
+                else
+                {
+                    UpdatePushingNote(3);
                 }
         });
     }
@@ -77,55 +119,29 @@ public class HitJudgeRx : MonoBehaviour
     void Update()
     {
 
-        //UpdatePushingKeyState();
+        if (notesManager.NoteDataAll.Count == 0)
+        {
+            //GameManager.Instance.isEnd = true;
+            Debug.Log("owatta");
+        }
 
-        if (!GameManager.Instance.isStart ||notesManager.NoteDataAll.Count == 0)
+        if (!GameManager.Instance.isStart || notesManager.NoteDataAll.Count == 0)
         {
             return;
         }
 
-        /*        for(int i = 3; i >= 0; i--)
-                {
-                    if (notesManager.NoteDataAll.Count - 1 < i)
-                    {
-                        continue;
-                    }
-
-                    if (IsCheckSameLane(i))
-                    {
-                        continue;
-                    }
-                    // 押した瞬間
-                    UpdateTapNote(i);
-                    // ロングノーツ長押し処理
-                    UpdatePushingNote(i);
-                    // スルー処理
-                    UpdateOverLookedNote(i);
-                }*/
-
         for (int LaneNum = 3; LaneNum >= 0; LaneNum--)
         {
-            if (notesManager.NoteDataAll.Count - 1 < LaneNum)
+            if (notesManager.NoteDataAll.Count == 0)
             {
-                continue;
+                break;
             }
-
-/*            if (IsCheckSameLane(LaneNum))
-            {
-                continue;
-            }*/
-            // 押した瞬間
-            //UpdateTapNote(LaneNum);
-            // ロングノーツ長押し処理
-            //UpdatePushingNote(LaneNum);
-            // スルー処理
             UpdateOverLookedNote(LaneNum);
         }
 
-        if (notesManager.NoteDataAll.Count == 0)
-        {
-            GameManager.Instance.isEnd = true;
-        }
+
+
+
 
     }
 
@@ -149,47 +165,11 @@ public class HitJudgeRx : MonoBehaviour
         }
         return false;
     }
-/*
-    void UpdateTapNote(int count)
-    {
-        // ボタンを押した瞬間の処理
-        for (int laneNum = 3; laneNum >= 0; laneNum--)
-        {
-            // ロングノーツ押しているときの処理
-            if (!touchKeyState[laneNum])
-            {
-                continue;
-            }
 
-            if (notesManager.NoteDataAll.Count < count)
-            {
-                continue;
-            }
-
-            if (laneNum != notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].GetLaneNum())
-            {
-                continue;
-            }
-
-            if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].GetType() == typeof(LongNoteData)
-                &&
-                !((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).GetIsPush())
-            {
-                LongNoteJudge(notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].CalcTime(mainManager.startTime), laneNum, count);
-                break;
-            }
-
-            if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].GetLaneNum() == laneNum)
-            {
-                NormalNoteJudge(notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].CalcTime(mainManager.startTime), laneNum, count);
-                break;
-            }
-        }
-    }*/
     void UpdateTapNote(int laneNum)
     {
         // ボタンを押した瞬間の処理
-        for (int count = 3; count >= 0; count--)
+        for (int count = 0; count <= 3; count++)
         {
             if (notesManager.NoteDataAll.Count < count)
             {
@@ -217,45 +197,31 @@ public class HitJudgeRx : MonoBehaviour
         }
     }
 
-    void UpdatePushingNote(int count)
+    void UpdatePushingNote(int laneNum)
     {
-
-        if (notesManager.NoteDataAll.Count < count)
-        {
-            return;
-        }
-
-        if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].GetType() != typeof(LongNoteData))
-        {
-            return;
-        }
-
-        if (!((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).GetIsPush())
-        {
-            return;
-        }
-
         // 1,レーン番号が違えばcontinue
         // 2,離した時 押した瞬間と長押しを管理している情報がfalseになれば長押ししたことにして処理
-        for (int laneNum = 3; laneNum >= 0; laneNum--)
+        for (int count = 0; count <= 3; count++)
         {
+            if (notesManager.NoteDataAll.Count < count)
+            {
+                continue;
+            }
+
             if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].GetLaneNum() != laneNum)
             {
                 continue;
             }
 
-            if (MissSecond + ((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).GetLastBehindTime() <= Time.time - mainManager.startTime)
+            if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].GetType() != typeof(LongNoteData))
             {
-                DeleteData(count);
-                break;
+                continue;
             }
-
-            // 長押し中であるかどうか
-            if (touchKeyState[laneNum] == true || pushingKeyState[laneNum] == true)
+            
+            if (!((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).GetIsPush())
             {
-                break;
+                continue;
             }
-
             if (CheckHitTiming(((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).GetLastBehindTime(mainManager.startTime), laneNum))
             {
                 ((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).DeleteAllObject();
@@ -271,25 +237,35 @@ public class HitJudgeRx : MonoBehaviour
         }
     }
 
-    void UpdateOverLookedNote(int count)
+    void UpdateOverLookedNote(int LaneNum)
     {
-        // ノーツ見逃し処理
-        if (IsCheckMissTime(count))
+        for (int i = 0; i <= 3; i++)
         {
-            if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].GetType() == typeof(LongNoteData)
-                &&
-                !((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).GetIsPush())
+            if (notesManager.NoteDataAll.Count < i)
             {
-                DeleteData(count);
-                return;
-            }
-            else if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count].GetType() == typeof(LongNoteData))
-            {
-                return;
+                continue;
             }
 
-            DeleteData(count);
+            // ノーツ見逃し処理
+            if (IsCheckMissTime(i))
+            {
+                if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - i].GetType() == typeof(LongNoteData)
+                    &&
+                    !((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - i]).GetIsPush())
+                {
+                    DeleteData(i);
+                    return;
+                }
+                else if (notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - i].GetType() == typeof(LongNoteData))
+                {
+                    return;
+                }
+
+                DeleteData(i);
+            }
         }
+
+
     }
 
     private void FixedUpdate()
@@ -299,6 +275,8 @@ public class HitJudgeRx : MonoBehaviour
 
     void LongNoteJudge(float time, int iLaneNum, int count)
     {
+
+        Debug.Log(count);
         if (CheckHitTiming(time, iLaneNum))
         {
             ((LongNoteData)notesManager.NoteDataAll[notesManager.NoteDataAll.Count - 1 - count]).DeleteOneObject(0);
@@ -354,7 +332,8 @@ public class HitJudgeRx : MonoBehaviour
 
     bool IsCheckMissTime(int count)
     {
-        if (notesManager.NoteDataAll.Count == 0)
+        
+        if (notesManager.NoteDataAll.Count < count)
         {
             return false;
         }
@@ -410,7 +389,7 @@ public class HitJudgeRx : MonoBehaviour
             Instantiate(hitEffect, new Vector3(laneNum - 1.5f, 0.6f, 0f), Quaternion.Euler(90, 0, 0));
         }
     }
-    void PopupJudgeLongMsg(int judge, int laneNum)
+/*    void PopupJudgeLongMsg(int judge, int laneNum)
     {
         // Instanceの削除処理はオブジェクトに記述
         Instantiate(JudgeMsgObj[judge], new Vector3(laneNum - 1.5f, 0.76f, 0.15f), Quaternion.Euler(45, 0, 0));
@@ -423,5 +402,5 @@ public class HitJudgeRx : MonoBehaviour
             return true;
         }
         return false;
-    }
+    }*/
 }

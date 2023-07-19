@@ -12,6 +12,8 @@ public class BaseSound : MonoBehaviour
     [SerializeField] AudioSource seSuorce;
     [SerializeField] List<AudioClip> seClip;
 
+    bool isPlayedMusic = false;
+
     protected void LoadMusic(string songName)
     {
         bgmSource.clip = (AudioClip)Resources.Load($"Musics/{songName}");
@@ -42,6 +44,7 @@ public class BaseSound : MonoBehaviour
 
     public void PlayBGM()
     {
+        isPlayedMusic = true;
         bgmSource.Play();
     }
 
@@ -58,11 +61,16 @@ public class BaseSound : MonoBehaviour
 
     public bool IsCheckEndBGM()
     {
-        if (!bgmSource.isPlaying)
+        if (!isPlayedMusic)
         {
             return true;
         }
         return false;
+    }
+
+    public bool IsEndBGM()
+    {
+        return bgmSource.isPlaying;
     }
    
 }

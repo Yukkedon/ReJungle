@@ -22,9 +22,16 @@ public class SoundMain : BaseSound
     void Update()
     {
 
+
         if (GameManager.Instance.isStart && !GameManager.Instance.isEnd && IsCheckEndBGM())
         {
             PlayBGM();
+            return;
+        }
+
+        if (!IsEndBGM() && GameManager.Instance.isStart)
+        {
+            GameManager.Instance.isEnd = true;
         }
 
     }

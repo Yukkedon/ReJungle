@@ -87,7 +87,7 @@ public class SelectManager : MonoBehaviour
     }
 
     int nowMusicId = -1;
-    void OnTriggerStay2D(Collider2D collision)
+    void OnTriggerEnter2D(Collider2D collision)
     {
         if (suAnimation.isStartAnimEnd)
         {

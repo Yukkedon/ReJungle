@@ -30,19 +30,67 @@ public class IInputEventProviderInpl : MonoBehaviour,IInputEventProvider
          this.UpdateAsObservable()
             .Select(_ => Input.GetKey(KeyCode.D))
             .DistinctUntilChanged()
-            .Skip(1)
             .Subscribe(_ =>
             {
                 //ボタンの状態が変化したら処理
                 if (_)
                 {
                     _keyStateD.OnNext(true);
-                    Debug.Log("おされた");
                 }
                 else
                 {
                     _keyStateD.OnNext(false);
-                    Debug.Log("はなれた");
+                }
+            }).AddTo(this);
+        
+        // Fボタン処理
+         this.UpdateAsObservable()
+            .Select(_ => Input.GetKey(KeyCode.F))
+            .DistinctUntilChanged()
+            .Subscribe(_ =>
+            {
+                //ボタンの状態が変化したら処理
+                if (_)
+                {
+                    _keyStateF.OnNext(true);
+                }
+                else
+                {
+                    _keyStateF.OnNext(false);
+                }
+            }).AddTo(this);
+        
+        // Jボタン処理
+         this.UpdateAsObservable()
+            .Select(_ => Input.GetKey(KeyCode.J))
+            .DistinctUntilChanged()
+            .Subscribe(_ =>
+            {
+                //ボタンの状態が変化したら処理
+                if (_)
+                {
+                    _keyStateJ.OnNext(true);
+                }
+                else
+                {
+                    _keyStateJ.OnNext(false);
+                }
+            }).AddTo(this);
+        
+        // Kボタン処理
+         this.UpdateAsObservable()
+            .Select(_ => Input.GetKey(KeyCode.K))
+            .DistinctUntilChanged()
+            .Subscribe(_ =>
+            {
+                //ボタンの状態が変化したら処理
+                if (_)
+                {
+                    _keyStateK.OnNext(true);
+                }
+                else
+                {
+                    _keyStateK.OnNext(false);
                 }
             }).AddTo(this);
 
