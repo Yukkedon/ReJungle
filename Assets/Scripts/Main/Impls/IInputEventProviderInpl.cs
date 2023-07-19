@@ -30,7 +30,6 @@ public class IInputEventProviderInpl : MonoBehaviour,IInputEventProvider
          this.UpdateAsObservable()
             .Select(_ => Input.GetKey(KeyCode.D))
             .DistinctUntilChanged()
-            .Skip(1)
             .Subscribe(_ =>
             {
                 //ボタンの状態が変化したら処理
@@ -48,7 +47,6 @@ public class IInputEventProviderInpl : MonoBehaviour,IInputEventProvider
          this.UpdateAsObservable()
             .Select(_ => Input.GetKey(KeyCode.F))
             .DistinctUntilChanged()
-            .Skip(1)
             .Subscribe(_ =>
             {
                 //ボタンの状態が変化したら処理
@@ -66,7 +64,6 @@ public class IInputEventProviderInpl : MonoBehaviour,IInputEventProvider
          this.UpdateAsObservable()
             .Select(_ => Input.GetKey(KeyCode.J))
             .DistinctUntilChanged()
-            .Skip(1)
             .Subscribe(_ =>
             {
                 //ボタンの状態が変化したら処理
@@ -84,7 +81,6 @@ public class IInputEventProviderInpl : MonoBehaviour,IInputEventProvider
          this.UpdateAsObservable()
             .Select(_ => Input.GetKey(KeyCode.K))
             .DistinctUntilChanged()
-            .Skip(1)
             .Subscribe(_ =>
             {
                 //ボタンの状態が変化したら処理

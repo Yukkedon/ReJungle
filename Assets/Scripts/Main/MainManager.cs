@@ -58,6 +58,13 @@ public class MainManager : MonoBehaviour
     public void Update()
     {
 
+        if (GameManager.Instance.isEnd && !isStartFade)
+        {
+            isStartFade = true;
+            StartCoroutine(FadeOutStart());
+            return;
+        }
+
         if (!isAnimStart && !GameManager.Instance.isStart && Input.GetKeyDown(KeyCode.Space))
         {
             isAnimStart = true;
@@ -68,11 +75,7 @@ public class MainManager : MonoBehaviour
             StartCoroutine(PushSpaceAnim());
         }
 
-        if (soundMain.IsCheckEndBGM() && GameManager.Instance.isStart && GameManager.Instance.isEnd && !isStartFade)
-        {
-            isStartFade = true;
-            StartCoroutine(FadeOutStart());
-        }
+
     }
 
     public void SetGameManagerScore()
@@ -158,6 +161,7 @@ public class MainManager : MonoBehaviour
 
     IEnumerator FadeOutStart()
     {
+        yield return new WaitForSeconds(1f);
         SetGameManagerScore();
         fade.FadeIn(1f, () => SceneManager.LoadScene("ResultScene"));
         yield return new WaitForSeconds(1f);
